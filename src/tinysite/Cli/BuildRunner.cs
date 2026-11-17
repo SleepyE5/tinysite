@@ -56,7 +56,9 @@ public static class BuildRunner
                 error.WriteLine($"tinysite: {message}");
             }
 
-            error.WriteLine($"tinysite: {problem.Messages.Count} problem(s) in the source; nothing was published.");
+            int count = problem.Messages.Count;
+            error.WriteLine(
+                $"tinysite: {count} {(count == 1 ? "problem" : "problems")} in the source; nothing was published.");
             return SourceBroken;
         }
         catch (SiteContentException failure)

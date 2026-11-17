@@ -249,7 +249,26 @@ public sealed class RunnerTests
         Assert.Contains(run.ErrorLines, line => line.Contains("one.md", StringComparison.Ordinal));
         Assert.Contains(run.ErrorLines, line => line.Contains("two.md", StringComparison.Ordinal));
         Assert.Contains(run.ErrorLines, line => line.Contains("nothing was published", StringComparison.Ordinal));
+        Assert.Contains(run.ErrorLines, line => line.Contains("2 problems in the source", StringComparison.Ordinal));
         Assert.Empty(output.Tree());
+    }
+
+    [Fact]
+    public void Build_CountsOneProblemInSingular()
+    {
+        // The summary line used to print "1 problem(s)", which is the kind of
+        // string a tool says when nobody has read it out loud. One broken
+        // document has to read as one problem, and two as two problems.
+        using TestTree source = TestTree.ScaffoldSource();
+        _ = source.Write("content/one.md", "---\nkey without a colon\n---\nbody\n");
+        using TestTree output = TestTree.Create("out");
+
+        Capture run = Run("build", "--source", source.Root, "--output", output.Root, "--base-url", "https://site.example");
+
+        Assert.Equal(1, run.Code);
+        Assert.Contains(run.ErrorLines, line => line.Contains("1 problem in the source", StringComparison.Ordinal));
+        Assert.DoesNotContain(run.Error, "(s)");
+        Assert.DoesNotContain(run.Error, "1 problems");
     }
 
     [Fact]
