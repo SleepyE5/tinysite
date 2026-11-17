@@ -4,6 +4,11 @@
     <RootNamespace>Tinysite.Tests</RootNamespace>
     <AssemblyName>tinysite.Tests</AssemblyName>
     <IsPackable>false</IsPackable>
+    <!--
+      Underscored test names (Parse_ReadsDateShapes) are the xunit convention for
+      stating scenario and expectation. CA1707 would force worse names here.
+    -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

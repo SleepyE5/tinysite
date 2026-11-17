@@ -16,6 +16,9 @@
     <AnalysisMode>Recommended</AnalysisMode>
     <Deterministic>true</Deterministic>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+
+    <!-- Never compile the AppleDouble sidecars this volume writes next to real files. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/._*</DefaultItemExcludes>
   </PropertyGroup>
 
   <!--

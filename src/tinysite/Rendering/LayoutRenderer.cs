@@ -7,17 +7,37 @@ namespace Tinysite.Rendering;
 public sealed class PlaceholderTable
 {
     private readonly Dictionary<string, string> values = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> rawNames = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Adds a value. Templates read it escaped through <c>{{name}}</c>.</summary>
+    /// <summary>Adds a value. A template reads it HTML-escaped through <c>{{name}}</c>.</summary>
     public PlaceholderTable Add(string name, string? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         values[name] = value ?? string.Empty;
+        _ = rawNames.Remove(name);
         return this;
     }
 
+    /// <summary>
+    /// Adds a value the generator itself produced - a page body, a list of tag links - which is
+    /// inserted without escaping. Author input never goes through here.
+    /// </summary>
+    public PlaceholderTable AddRaw(string name, string? html)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        values[name] = html ?? string.Empty;
+        _ = rawNames.Add(name);
+        return this;
+    }
+
+    /// <summary>True when the value for this name was registered as already-safe HTML.</summary>
+    public bool IsRaw(string name) => rawNames.Contains(name);
+
     /// <summary>Reads a value, or <see langword="null"/> when the name was never set.</summary>
     public string? this[string name] => values.TryGetValue(name, out string? value) ? value : null;
+
+    /// <summary>True when a value was set for this name, empty or not.</summary>
+    public bool HasValue(string name) => values.ContainsKey(name);
 
     /// <summary>Names that were set, ordinal sorted, for diagnostics.</summary>
     public IReadOnlyList<string> Names
@@ -44,7 +64,7 @@ public sealed class PlaceholderTable
 /// </remarks>
 public static class LayoutRenderer
 {
-    /// <summary>The placeholder a page body is inserted at. Always raw.</summary>
+    /// <summary>The placeholder a page body is inserted at.</summary>
     public const string ContentKey = "content";
 
     /// <summary>
@@ -77,7 +97,7 @@ public static class LayoutRenderer
                     value = string.Empty;
                 }
 
-                bool insertAsWritten = raw || string.Equals(name, ContentKey, StringComparison.OrdinalIgnoreCase);
+                bool insertAsWritten = raw || placeholders.IsRaw(name);
                 _ = output.Append(insertAsWritten ? value : HtmlEscape.Escape(value));
                 continue;
             }

@@ -55,12 +55,37 @@ public sealed class LayoutRendererTests
     [Fact]
     public void Render_ContentIsNeverEscapedBecauseItIsGeneratedHtml()
     {
-        PlaceholderTable table = new PlaceholderTable().Add("content", "<p>Real &lt;em&gt; markup</p>");
+        // Raw only because the builder registered it that way. Nothing in the
+        // renderer knows the name "content" any more, which is the point: a
+        // placeholder is escaped until a caller states that it is HTML.
+        PlaceholderTable table = new PlaceholderTable().AddRaw("content", "<p>Real &lt;em&gt; markup</p>");
 
         string html = LayoutRenderer.Render("{{content}}", table).Html;
 
         // The converter already escaped what needed escaping; the slot must not escape twice.
         Assert.Equal("<p>Real &lt;em&gt; markup</p>", html);
+    }
+
+    [Fact]
+    public void Render_EscapesContentAddedThroughAddBecauseThatIsAuthorInput()
+    {
+        PlaceholderTable table = new PlaceholderTable().Add("content", "<script>alert(1)</script>");
+
+        string html = LayoutRenderer.Render("{{content}}", table).Html;
+
+        Assert.DoesNotContain("<script>", html);
+        Assert.Contains("&lt;script&gt;", html);
+    }
+
+    [Fact]
+    public void AddRawThenAddOnTheSameNameReturnsTheValueToBeingEscaped()
+    {
+        // A builder that reuses one table for two documents must not leak rawness
+        // from the first into the second.
+        PlaceholderTable table = new PlaceholderTable().AddRaw("content", "<p>a</p>").Add("content", "<p>a</p>");
+
+        Assert.False(table.IsRaw("content"));
+        Assert.Equal("&lt;p&gt;a&lt;/p&gt;", LayoutRenderer.Render("{{content}}", table).Html);
     }
 
     [Theory]
@@ -127,7 +152,7 @@ public sealed class LayoutRendererTests
     {
         const string template = "<style>.card { color: red }{{content}}</style>";
 
-        string html = LayoutRenderer.Render(template, new PlaceholderTable().Add("content", "<p>x</p>")).Html;
+        string html = LayoutRenderer.Render(template, new PlaceholderTable().AddRaw("content", "<p>x</p>")).Html;
 
         Assert.Equal("<style>.card { color: red }<p>x</p></style>", html);
     }
