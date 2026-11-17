@@ -17,6 +17,16 @@
     <PackageTags>static-site;generator;markdown;rss;dotnet-tool</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) 2026 Enrico Sgiarovello</Copyright>
+    <PackageProjectUrl>https://github.com/SleepyE5/tinysite</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SleepyE5/tinysite</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Without this the packed tool carries no readme and NuGet warns on
+         every pack; the repo README is the only documentation it ships with. -->
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>
