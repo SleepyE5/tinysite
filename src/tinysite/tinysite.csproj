@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Tinysite</RootNamespace>
+    <AssemblyName>tinysite</AssemblyName>
+
+    <!-- Ships as an installable dotnet global tool named "tinysite". -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>tinysite</ToolCommandName>
+
+    <!-- Package metadata -->
+    <PackageId>tinysite</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Enrico Sgiarovello</Authors>
+    <Description>A tiny, dependency-free static site generator: Markdown plus one layout template in, a complete site with tag pages, an archive and an RSS feed out. The Markdown converter is hand-written.</Description>
+    <PackageTags>static-site;generator;markdown;rss;dotnet-tool</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) 2026 Enrico Sgiarovello</Copyright>
+  </PropertyGroup>
+
+</Project>

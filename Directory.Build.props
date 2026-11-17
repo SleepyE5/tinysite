@@ -1,0 +1,33 @@
+<Project>
+
+  <!--
+    Shared build settings for every project in the repository.
+    One place for the target framework so src and tests can never drift apart.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <Deterministic>true</Deterministic>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!--
+    The build volume is removable/exFAT on macOS, which sprouts AppleDouble
+    ._ metadata files that MSBuild globs happily pick up. Keep the output
+    directories clean so `dotnet pack` and the end-to-end tests stay sane.
+  -->
+  <Target Name="RemoveAppleDoubleArtifacts" AfterTargets="Build;Publish" Condition="'$(OS)' != 'Windows_NT'">
+    <ItemGroup>
+      <AppleDoubleFiles Include="$(OutDir)**/._*" />
+    </ItemGroup>
+    <Delete Files="@(AppleDoubleFiles)" />
+  </Target>
+
+</Project>
