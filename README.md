@@ -31,19 +31,37 @@ tinysite: 2 documents (1 dated), 9 files -> _site in 42 ms
 
 ## Install
 
-It is not on nuget.org yet. From a checkout:
+It is not on nuget.org. The release carries the package, so you do not need a
+checkout or the .NET SDK build to get the tool:
 
 ```sh
-git clone https://github.com/SleepyE5/tinysite
-cd tinysite && dotnet pack src/tinysite -c Release
+mkdir -p /tmp/tinysite-pkg
+curl -L -o /tmp/tinysite-pkg/tinysite.0.1.0.nupkg \
+  https://github.com/SleepyE5/tinysite/releases/download/v0.1.0/tinysite.0.1.0.nupkg
 dotnet tool install --tool-path ~/.local/bin \
-  --add-source ./src/tinysite/bin/Release --version 0.1.0 tinysite
+  --add-source /tmp/tinysite-pkg --version 0.1.0 tinysite
 tinysite --version     # tinysite 0.1.0
 ```
 
-The `--version` matters while the package is not published: without it, the
-resolver looks at nuget.org too, where the id `tinysite` is already somebody
-else's non-tool package.
+Two things in there are load-bearing, and both bit me while writing them. Keep
+the downloaded filename as `tinysite.0.1.0.nupkg`: a local folder feed matches
+packages by that name, so `curl -O` into a file called `dl.nupkg` installs
+nothing and says the package cannot be found. And keep `--version` — while the
+id is unpublished the resolver also asks nuget.org, where `tinysite` is already
+somebody else's non-tool package.
+
+From a checkout instead, if you want to change something first:
+
+```sh
+git clone https://github.com/SleepyE5/tinysite
+cd tinysite && dotnet pack src/tinysite/tinysite.csproj -c Release
+dotnet tool install --tool-path ~/.local/bin \
+  --add-source ./src/tinysite/bin/Release --version 0.1.0 tinysite
+```
+
+The `.csproj` is named rather than the folder, because on an exFAT volume
+macOS drops a `._tinysite.csproj` twin next to it and MSBuild then refuses to
+guess which one you meant.
 
 ## The whole model
 
