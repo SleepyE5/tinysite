@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore tinysite.sln
+
+      # TreatWarningsAsErrors is on in Directory.Build.props, so a warning in
+      # this step is a failed build rather than noise nobody reads.
+      - name: Build
+        run: dotnet build tinysite.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test tinysite.sln -c Release --no-build --logger 'console;verbosity=minimal'
+
+      # The thing users actually consume: install the packed tool and generate a
+      # site with it. A green unit suite would not notice a broken `bin` wiring
+      # or a missing DotnetTool package type.
+      - name: Pack and install as a global tool
+        run: |
+          dotnet pack src/tinysite/tinysite.csproj -c Release --no-build
+          dotnet tool install --tool-path ./tools --add-source src/tinysite/bin/Release --version 0.1.0 tinysite
+          ./tools/tinysite --version
+
+      - name: Build a site with the installed tool
+        run: |
+          rm -rf /tmp/demo && ./tools/tinysite new /tmp/demo
+          ./tools/tinysite build --source /tmp/demo --output /tmp/demo/_site --base-url https://example.github.io/demo
+          test -f /tmp/demo/_site/index.html
+          test -f /tmp/demo/_site/feed.xml
+          test -f /tmp/demo/_site/tags/index.html
